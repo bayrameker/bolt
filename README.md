@@ -35,12 +35,6 @@ composer install
 
 ### 3. Set Up Environment Variables
 
-Copy the `.env.example` file to `.env` and configure your environment variables:
-
-```sh
-cp .env.example .env
-```
-
 Edit the `.env` file to match your configuration:
 
 ```env

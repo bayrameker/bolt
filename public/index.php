@@ -11,4 +11,4 @@ $dotenv->load();
 $app = new Application();
 
 $app->run();
-echo "Application loaded";
+//echo "Application loaded";

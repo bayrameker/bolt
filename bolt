@@ -1,0 +1,167 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
+
+use Core\Database;
+use Dotenv\Dotenv;
+
+$dotenv = Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+Database::connect();
+
+$command = $argv[1] ?? null;
+
+switch ($command) {
+    case 'migrate':
+        migrate();
+        break;
+    case 'seed':
+        seed();
+        break;
+    case 'controller':
+        $name = $argv[2] ?? null;
+        createController($name);
+        break;
+    case 'model':
+        $name = $argv[2] ?? null;
+        createModel($name);
+        break;
+    case 'service':
+        $name = $argv[2] ?? null;
+        createService($name);
+        break;
+    case 'repository':
+        $name = $argv[2] ?? null;
+        createRepository($name);
+        break;
+    case 'serve':
+        serve();
+        break;
+    default:
+        echo "Invalid command.\n";
+        break;
+}
+
+function migrate()
+{
+    require __DIR__ . '/storage/migrations/2024_06_19_000001_create_projects_table.php';
+    echo "Migrations run successfully.\n";
+}
+
+function seed()
+{
+    require __DIR__ . '/storage/seeds/ProjectSeeder.php';
+    echo "Database seeded successfully.\n";
+}
+
+function createController($name)
+{
+    if ($name) {
+        $controllerTemplate = <<<EOT
+<?php
+
+namespace App\Controllers;
+
+use Core\Controller;
+use Core\Request;
+use Core\Response;
+
+class {$name}Controller extends Controller
+{
+    public function registerRoutes(\$router)
+    {
+        \$router->get('/{$name}', [\$this, 'index']);
+    }
+
+    public function index(Request \$request, Response \$response)
+    {
+        \$this->render('{$name}/index');
+    }
+}
+EOT;
+        file_put_contents(__DIR__ . "/app/Controllers/{$name}Controller.php", $controllerTemplate);
+        echo "{$name}Controller created successfully.\n";
+    } else {
+        echo "Controller name is required.\n";
+    }
+}
+
+function createModel($name)
+{
+    if ($name) {
+        $modelTemplate = <<<EOT
+<?php
+
+namespace App\Models;
+
+use Core\Model;
+
+class {$name} extends Model
+{
+    protected \$fillable = [];
+}
+EOT;
+        file_put_contents(__DIR__ . "/app/Models/{$name}.php", $modelTemplate);
+        echo "{$name} model created successfully.\n";
+    } else {
+        echo "Model name is required.\n";
+    }
+}
+
+function createService($name)
+{
+    if ($name) {
+        $serviceTemplate = <<<EOT
+<?php
+
+namespace App\Services;
+
+use Core\Service;
+
+class {$name}Service extends Service
+{
+    // Service methods
+}
+EOT;
+        file_put_contents(__DIR__ . "/app/Services/{$name}Service.php", $serviceTemplate);
+        echo "{$name}Service created successfully.\n";
+    } else {
+        echo "Service name is required.\n";
+    }
+}
+
+function createRepository($name)
+{
+    if ($name) {
+        $repositoryTemplate = <<<EOT
+<?php
+
+namespace App\Repositories;
+
+use Core\Repository;
+use App\Models\\{$name};
+
+class {$name}Repository extends Repository
+{
+    public function __construct()
+    {
+        parent::__construct(new {$name}());
+    }
+}
+EOT;
+        file_put_contents(__DIR__ . "/app/Repositories/{$name}Repository.php", $repositoryTemplate);
+        echo "{$name}Repository created successfully.\n";
+    } else {
+        echo "Repository name is required.\n";
+    }
+}
+
+function serve()
+{
+    $port = getenv('APP_PORT') ?: 8080;
+    $host = 'localhost';
+    echo "Starting server on http://$host:$port\n";
+    exec("php -S $host:$port -t public");
+}

@@ -5,6 +5,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Core\Database;
 use Dotenv\Dotenv;
+use Core\ViewRenderer;
 
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -58,6 +59,7 @@ function seed()
 
 function createController($name)
 {
+    $lname = strtolower($name);
     if ($name) {
         $controllerTemplate = <<<EOT
 <?php
@@ -67,17 +69,25 @@ namespace App\Controllers;
 use Core\Controller;
 use Core\Request;
 use Core\Response;
+use Core\ViewRenderer;
 
 class {$name}Controller extends Controller
 {
+
     public function registerRoutes(\$router)
     {
-        \$router->get('/{$name}', [\$this, 'index']);
+        \$router->get('/{$lname}', [\$this, 'index']);
     }
 
     public function index(Request \$request, Response \$response)
     {
-        \$this->render('{$name}/index');
+        
+        \$viewRenderer = new ViewRenderer('{$lname}/index', [
+            'title' => '{$name} Page',
+            'message' => 'Welcome to My Bolt Framework!',
+            'layout' => 'layout'
+        ]);
+        \$viewRenderer->render();
     }
 }
 EOT;
@@ -87,6 +97,7 @@ EOT;
         echo "Controller name is required.\n";
     }
 }
+
 
 function createModel($name)
 {

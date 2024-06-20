@@ -10,6 +10,7 @@
     "require": {
         "vlucas/phpdotenv": "^5.4",
         "illuminate/database": "^8.0",
-        "guzzlehttp/guzzle": "^7.0"
+        "guzzlehttp/guzzle": "^7.0",
+        "doctrine/annotations": "^2.0"
     }
 }

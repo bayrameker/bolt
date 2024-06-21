@@ -54,7 +54,7 @@ class ViewRenderer
         preg_match_all('/@component\((.*?)\)/', $content, $matches);
         foreach ($matches[1] as $key => $match) {
             $componentName = trim($match, "'\" ");
-            $componentFile = __DIR__ . '/../app/Views/components/' . $componentName . '.php';
+            $componentFile = __DIR__ . '/../app/Views/partials/' . $componentName . '.php';
             if (file_exists($componentFile)) {
                 ob_start();
                 include $componentFile;

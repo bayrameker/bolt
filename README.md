@@ -1,128 +1,111 @@
 
-# Bolt PHP Framework
+# Bolt Framework
 
-**Bolt** is a lightweight and highly extendable PHP micro-framework designed for building modern web applications with ease. Bolt aims to provide a simple yet powerful structure for managing controllers, models, views, and routing.
+Bolt is a lightweight and extendable PHP micro framework designed to simplify modern PHP application development with built-in support for AI integration.
 
 ## Features
 
-- Lightweight and easy to use
 - MVC architecture
 - Simple and flexible routing system
-- Composer autoloading
-- Environment configuration using `.env`
-- Extendable and customizable
+- Database ORM and migration support
+- Environment variable management with `.env` file
+- Command-line interface (CLI) for easy usage
+- Ready for AI integration
 
 ## Installation
 
-To get started with Bolt, you need to have PHP and Composer installed on your system. Follow the steps below to set up a new Bolt project.
+### Requirements
 
-### 1. Clone the Repository
+- PHP 7.4 or higher
+- Composer
 
-Clone the Bolt repository from GitHub:
+### Step 1: Clone the Project
 
-```sh
-git clone https://github.com/bayrameker/bolt.git
+```bash
+git clone https://github.com/yourusername/bolt.git
 cd bolt
 ```
 
-### 2. Install Dependencies
+### Step 2: Install Dependencies
 
-Install the required Composer dependencies:
-
-```sh
+```bash
 composer install
 ```
 
-### 3. Set Up Environment Variables
+### Step 3: Configure the .env File
 
-Edit the `.env` file to match your configuration:
+Create a `.env` file in the project root directory and configure it as follows:
 
 ```env
-APP_NAME="Bolt Framework"
-APP_ENV=local
-APP_DEBUG=true
-APP_PORT=8080
-
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
-DB_DATABASE=your_database
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
+DB_NAME=your_database_name
+DB_USER=your_database_username
+DB_PASS=your_database_password
+APP_PORT=8080
 ```
 
-### 4. Start the Development Server
+### Step 4: Start the Server
 
-Start the development server using the Bolt CLI tool:
-
-```sh
+```bash
 php bolt serve
 ```
 
-By default, the server will run on port 8080. You can access your application at `http://localhost:8080`.
-
-## Project Structure
-
-Here's an overview of the project's directory structure:
-
-```
-bolt/
-├── app/
-│   ├── Controllers/
-│   │   └── HomeController.php
-│   ├── Models/
-│   │   └── Project.php
-│   ├── Repositories/
-│   │   └── ProjectRepository.php
-│   ├── Services/
-│   │   ├── AIService.php
-│   │   └── ProjectService.php
-│   ├── Views/
-│       ├── layout.php
-│       ├── home.php
-├── config/
-│   ├── app.php
-│   └── database.php
-├── core/
-│   ├── Application.php
-│   ├── Controller.php
-│   ├── Database.php
-│   ├── Model.php
-│   ├── Repository.php
-│   ├── Service.php
-│   ├── Request.php
-│   ├── Response.php
-│   ├── Router.php
-│   ├── View.php
-│   └── AI.php
-├── public/
-│   ├── index.php
-│   └── favicon.ico
-├── storage/
-│   ├── logs/
-│   ├── migrations/
-│   │   └── 2024_06_19_000001_create_projects_table.php
-│   └── seeds/
-│       └── ProjectSeeder.php
-├── vendor/
-├── .htaccess
-├── composer.json
-├── .env
-└── bolt
-```
+Open your browser and navigate to `http://localhost:8080` to see your application running.
 
 ## Usage
 
-### Controllers
+### Command-Line Interface (CLI)
 
-Controllers handle the request logic and return responses. To create a new controller, use the Bolt CLI tool:
+Bolt provides a CLI tool to perform various tasks easily.
 
-```sh
-php bolt controller Example
+#### Create a Controller
+
+```bash
+php bolt controller Home
 ```
 
-This will create a new `ExampleController.php` file in the `app/Controllers` directory.
+#### Create a Model
 
-#### Example Controller
+```bash
+php bolt model User
+```
+
+#### Create a Service
+
+```bash
+php bolt service UserService
+```
+
+#### Create a Repository
+
+```bash
+php bolt repository UserRepository
+```
+
+#### Create a Migration
+
+```bash
+php bolt migration create_users_table
+```
+
+#### Run Migrations
+
+```bash
+php bolt migrate
+```
+
+#### Run Seeds
+
+```bash
+php bolt seed
+```
+
+### MVC Structure
+
+#### Controller
+
+Controllers are located in the `app/Controllers` directory. When you create a new controller, it looks like this:
 
 ```php
 <?php
@@ -132,32 +115,30 @@ namespace App\Controllers;
 use Core\Controller;
 use Core\Request;
 use Core\Response;
+use Core\ViewRenderer;
 
-class ExampleController extends Controller
+class HomeController extends Controller
 {
     public function registerRoutes($router)
     {
-        $router->get('/example', [$this, 'index']);
+        $router->get('/', [$this, 'index']);
     }
 
     public function index(Request $request, Response $response)
     {
-        $this->render('example', ['message' => 'Hello from ExampleController!']);
+        $viewRenderer = new ViewRenderer('home', [
+            'title' => 'Home Page',
+            'message' => 'Welcome to My Bolt Framework!',
+            'layout' => 'layout'
+        ]);
+        $viewRenderer->render();
     }
 }
 ```
 
-### Models
+#### Model
 
-Models represent the data structure and handle database interactions. To create a new model, use the Bolt CLI tool:
-
-```sh
-php bolt model Example
-```
-
-This will create a new `Example.php` file in the `app/Models` directory.
-
-#### Example Model
+Models are located in the `app/Models` directory. When you create a new model, it looks like this:
 
 ```php
 <?php
@@ -166,92 +147,63 @@ namespace App\Models;
 
 use Core\Model;
 
-class Example extends Model
+class User extends Model
 {
-    protected $fillable = ['name', 'description'];
+    protected $fillable = ['name', 'email', 'password'];
+    protected $table = 'users';
 }
 ```
 
-### Views
+#### Service
 
-Views handle the presentation layer. Create a new view file in the `app/Views` directory.
-
-#### Example View (`app/Views/example.php`)
-
-```php
-<p><?= $message ?></p>
-```
-
-### Routing
-
-Routes are defined in the controller classes. Bolt supports GET and POST requests.
-
-#### Defining Routes
-
-```php
-$router->get('/example', [$this, 'index']);
-$router->post('/example', [$this, 'store']);
-```
-
-### Environment Configuration
-
-Bolt uses the `.env` file for environment configuration. This file contains key-value pairs for various configuration options.
-
-#### Example `.env` File
-
-```env
-APP_NAME="Bolt Framework"
-APP_ENV=local
-APP_DEBUG=true
-APP_PORT=8080
-
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_DATABASE=your_database
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
-```
-
-## Extending Bolt
-
-Bolt is designed to be easily extendable. You can add custom services, repositories, and more by following the structure provided.
-
-### Creating a Service
-
-To create a new service, use the Bolt CLI tool:
-
-```sh
-php bolt service Example
-```
-
-This will create a new `ExampleService.php` file in the `app/Services` directory.
-
-#### Example Service
+Services are located in the `app/Services` directory. When you create a new service, it looks like this:
 
 ```php
 <?php
 
 namespace App\Services;
 
-use Core\Service;
+use App\Repositories\UserRepository;
 
-class ExampleService extends Service
+class UserService
 {
-    // Service methods
+    protected $repository;
+
+    public function __construct(UserRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    public function getAllUsers()
+    {
+        return $this->repository->findAll();
+    }
+
+    public function getUserById($id)
+    {
+        return $this->repository->find($id);
+    }
+
+    public function createUser($data)
+    {
+        return $this->repository->create($data);
+    }
+
+    public function updateUser($id, $data)
+    {
+        return $this->repository->update($id, $data);
+    }
+
+    public function deleteUser($id)
+    {
+        return $this->repository->delete($id);
+    }
 }
 ```
 
-### Creating a Repository
+#### Repository
 
-To create a new repository, use the Bolt CLI tool:
-
-```sh
-php bolt repository Example
-```
-
-This will create a new `ExampleRepository.php` file in the `app/Repositories` directory.
-
-#### Example Repository
+Repositories are located in the `app/Repositories` directory. When you create a new repository, it looks like this:
 
 ```php
 <?php
@@ -259,22 +211,62 @@ This will create a new `ExampleRepository.php` file in the `app/Repositories` di
 namespace App\Repositories;
 
 use Core\Repository;
-use App\Models\Example;
+use App\Models\User;
 
-class ExampleRepository extends Repository
+class UserRepository extends Repository
 {
     public function __construct()
     {
-        parent::__construct(new Example());
+        parent::__construct(new User());
     }
 }
 ```
 
-## Conclusion
+#### Migration
 
-Bolt is a lightweight and highly extendable PHP micro-framework that provides a solid foundation for building modern web applications. Its simple and flexible structure allows you to quickly develop and deploy your projects. Feel free to explore and customize Bolt to fit your needs.
+Migration files are located in the `database/migrations` directory. When you create a new migration, it looks like this:
 
-For more information and the latest updates, visit the [Bolt GitHub repository](https://github.com/bayrameker/bolt).
+```php
+<?php
 
+use Core\Migration;
 
+class CreateUsersTable
+{
+    public function up()
+    {
+        $migration = new Migration();
+        $migration->createTable('users', function ($table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email');
+            $table->string('password');
+            $table->timestamps();
+        });
+    }
+}
+```
 
+## Structure
+
+- `app/Controllers`: Controller files
+- `app/Models`: Model files
+- `app/Services`: Service files
+- `app/Repositories`: Repository files
+- `app/Views`: View files
+- `core`: Framework core files
+- `database/migrations`: Migration files
+- `database/seeds`: Seed files
+- `public`: Publicly accessible files (CSS, JS, images, etc.)
+- `.env`: Environment variables
+
+## Contributing
+
+If you want to contribute to Bolt, please submit a pull request. We welcome contributions!
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for more details.
+```
+
+This README provides a comprehensive overview of the Bolt framework, including installation, usage, and a description of its structure and features.

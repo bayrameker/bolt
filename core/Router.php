@@ -16,18 +16,27 @@ class Router
         $this->routes['POST'][$uri] = $callback;
     }
 
+    public function put($uri, $callback)
+    {
+        $this->routes['PUT'][$uri] = $callback;
+    }
+
+    public function delete($uri, $callback)
+    {
+        $this->routes['DELETE'][$uri] = $callback;
+    }
+
     public function resolve()
     {
         $uri = $this->getUri();
         $method = $_SERVER['REQUEST_METHOD'];
 
-        // Statik dosyaları kontrol etme ve sunma
+        // Serve static files
         if ($this->isStaticFile($uri)) {
             $this->serveStaticFile($uri);
             return;
         }
 
-        // Dinamik rotaları çözme
         if (isset($this->routes[$method][$uri])) {
             call_user_func($this->routes[$method][$uri], new Request(), new Response());
         } else {

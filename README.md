@@ -22,7 +22,7 @@ Bolt is a lightweight and extendable PHP micro framework designed to simplify mo
 ### Step 1: Clone the Project
 
 ```bash
-git clone https://github.com/yourusername/bolt.git
+git clone https://github.com/bayrameker/bolt.git
 cd bolt
 ```
 

@@ -61,10 +61,15 @@ function migrate()
     foreach (glob(__DIR__ . '/database/migrations/*.php') as $migrationFile) {
         require_once $migrationFile;
         $class = basename($migrationFile, '.php');
-        if (class_exists($class)) {
-            $migration = new $class();
+        $className = preg_replace('/^[0-9_]+/', '', $class);
+        $className = str_replace('_', '', ucwords($className, '_'));
+
+        if (class_exists($className)) {
+            $migration = new $className();
             $migration->up();
-            echo "Migrated: " . $class . "\n";
+            echo "Migrated: " . $className . "\n";
+        } else {
+            echo "Class does not exist: " . $className . "\n";
         }
     }
 }
@@ -193,11 +198,41 @@ function createService($name)
 
 namespace App\Services;
 
-use Core\Service;
+use App\Repositories\\{$name}Repository;
 
-class {$name}Service extends Service
+class {$name}Service
 {
-    // Service methods
+    protected \$repository;
+
+    public function __construct({$name}Repository \$repository)
+    {
+        \$this->repository = \$repository;
+    }
+
+    public function getAll{$name}s()
+    {
+        return \$this->repository->findAll();
+    }
+
+    public function get{$name}ById(\$id)
+    {
+        return \$this->repository->find(\$id);
+    }
+
+    public function create{$name}(\$data)
+    {
+        return \$this->repository->create(\$data);
+    }
+
+    public function update{$name}(\$id, \$data)
+    {
+        return \$this->repository->update(\$id, \$data);
+    }
+
+    public function delete{$name}(\$id)
+    {
+        return \$this->repository->delete(\$id);
+    }
 }
 EOT;
         file_put_contents(__DIR__ . "/app/Services/{$name}Service.php", $serviceTemplate);
@@ -206,6 +241,7 @@ EOT;
         echo "Service name is required.\n";
     }
 }
+
 
 function createRepository($name)
 {

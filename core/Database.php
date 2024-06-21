@@ -12,10 +12,10 @@ class Database
 
     private function __construct()
     {
-        $host = getenv('DB_HOST');
-        $db = getenv('DB_NAME');
-        $user = getenv('DB_USER');
-        $pass = getenv('DB_PASS');
+        $host = $_ENV['DB_HOST'];
+        $db = $_ENV['DB_NAME'];
+        $user = $_ENV['DB_USER'];
+        $pass = $_ENV['DB_PASS'];
         $charset = 'utf8mb4';
         $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 
@@ -26,7 +26,7 @@ class Database
         ];
 
         try {
-            $this->connection = new PDO($dsn, $user, $pass, $options);
+            $this->connection = new PDO($dsn, $user, $pass ?: '', $options);
         } catch (PDOException $e) {
             throw new PDOException($e->getMessage(), (int)$e->getCode());
         }

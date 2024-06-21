@@ -2,6 +2,8 @@
 
 namespace Core;
 
+use Dotenv\Dotenv;
+
 class Application
 {
     public function __construct()
@@ -13,6 +15,9 @@ class Application
 
     private function loadConfig()
     {
+        $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
+        $dotenv->load();
+
         foreach (glob(__DIR__ . '/../config/*.php') as $configFile) {
             require_once $configFile;
         }
@@ -28,7 +33,6 @@ class Application
             $class = 'App\\Controllers\\' . basename($controllerFile, '.php');
             if (class_exists($class) && method_exists($class, 'registerRoutes')) {
                 $controller = new $class();
-               // echo "Registering routes for: " . $class . "\n";
                 $controller->registerRoutes($router);
             }
         }
@@ -38,7 +42,6 @@ class Application
 
     public function run()
     {
-        //echo "Running router\n";
         $GLOBALS['router']->resolve();
     }
 }

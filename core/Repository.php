@@ -11,37 +11,28 @@ abstract class Repository
         $this->model = $model;
     }
 
-    public function findAll()
+    public function find($id)
     {
-        return $this->model::all();
+        return $this->model->find($id);
     }
 
-    public function findById($id)
+    public function findAll()
     {
-        return $this->model::find($id);
+        return $this->model->findAll();
     }
 
     public function create(array $data)
     {
-        return $this->model::create($data);
+        return $this->model->create($data);
     }
 
     public function update($id, array $data)
     {
-        $model = $this->model::find($id);
-        if ($model) {
-            $model->update($data);
-            return $model;
-        }
-        return null;
+        return $this->model->update($id, $data);
     }
 
     public function delete($id)
     {
-        $model = $this->model::find($id);
-        if ($model) {
-            return $model->delete();
-        }
-        return false;
+        return $this->model->delete($id);
     }
 }

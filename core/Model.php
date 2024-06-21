@@ -2,52 +2,54 @@
 
 namespace Core;
 
-use Illuminate\Database\Eloquent\Model as Eloquent;
+use PDO;
 
-abstract class Model extends Eloquent
+abstract class Model
 {
-    // Ortak model işlevleri
-    public static function createRecord(array $data)
+    protected $table;
+    protected $db;
+
+    public function __construct()
     {
-        return static::create($data);
+        $this->db = Database::getInstance()->getConnection();
     }
 
-    public static function updateRecord($id, array $data)
+    public function find($id)
     {
-        $record = static::find($id);
-        if ($record) {
-            $record->update($data);
-            return $record;
-        }
-        return null;
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch();
     }
 
-    public static function deleteRecord($id)
+    public function findAll()
     {
-        $record = static::find($id);
-        if ($record) {
-            return $record->delete();
-        }
-        return false;
+        $stmt = $this->db->query("SELECT * FROM {$this->table}");
+        return $stmt->fetchAll();
     }
 
-    public static function findById($id)
+    public function create(array $data)
     {
-        return static::find($id);
+        $keys = array_keys($data);
+        $fields = implode(',', $keys);
+        $placeholders = ':' . implode(', :', $keys);
+
+        $stmt = $this->db->prepare("INSERT INTO {$this->table} ($fields) VALUES ($placeholders)");
+        return $stmt->execute($data);
     }
 
-    public static function findAll()
+    public function update($id, array $data)
     {
-        return static::all();
+        $fields = implode(' = ?, ', array_keys($data)) . ' = ?';
+        $values = array_values($data);
+        $values[] = $id;
+
+        $stmt = $this->db->prepare("UPDATE {$this->table} SET $fields WHERE id = ?");
+        return $stmt->execute($values);
     }
 
-    public static function findByColumn($column, $value)
+    public function delete($id)
     {
-        return static::where($column, $value)->get();
-    }
-
-    public static function findOneByColumn($column, $value)
-    {
-        return static::where($column, $value)->first();
+        $stmt = $this->db->prepare("DELETE FROM {$this->table} WHERE id = :id");
+        return $stmt->execute(['id' => $id]);
     }
 }

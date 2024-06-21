@@ -6,17 +6,20 @@ require __DIR__ . '/vendor/autoload.php';
 use Core\Database;
 use Dotenv\Dotenv;
 use Core\ViewRenderer;
+use Core\Migration;
 
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
-
-Database::connect();
 
 $command = $argv[1] ?? null;
 
 switch ($command) {
     case 'migrate':
         migrate();
+        break;
+    case 'create:migration':
+        $name = $argv[2] ?? null;
+        createMigration($name);
         break;
     case 'seed':
         seed();
@@ -47,14 +50,75 @@ switch ($command) {
 
 function migrate()
 {
-    require __DIR__ . '/storage/migrations/2024_06_19_000001_create_projects_table.php';
-    echo "Migrations run successfully.\n";
+    try {
+        Database::connect();
+        echo "Database connection successful.\n";
+    } catch (PDOException $e) {
+        echo "Database connection failed: " . $e->getMessage() . "\n";
+        exit(1);
+    }
+
+    foreach (glob(__DIR__ . '/database/migrations/*.php') as $migrationFile) {
+        require_once $migrationFile;
+        $class = basename($migrationFile, '.php');
+        if (class_exists($class)) {
+            $migration = new $class();
+            $migration->up();
+            echo "Migrated: " . $class . "\n";
+        }
+    }
+}
+
+function createMigration($name)
+{
+    if ($name) {
+        $timestamp = date('Y_m_d_His');
+        $className = 'Create' . ucfirst($name) . 'Table';
+        $fileName = "{$timestamp}_create_{$name}_table.php";
+        $migrationTemplate = <<<EOT
+<?php
+
+use Core\Migration;
+
+class {$className}
+{
+    public function up()
+    {
+        \$migration = new Migration();
+        \$migration->createTable('{$name}', function (\$table) {
+            \$table->id();
+            \$table->string('name');
+            \$table->timestamps();
+        });
+    }
+}
+EOT;
+        file_put_contents(__DIR__ . "/database/migrations/{$fileName}", $migrationTemplate);
+        echo "Migration created successfully: {$fileName}\n";
+    } else {
+        echo "Migration name is required.\n";
+    }
 }
 
 function seed()
 {
-    require __DIR__ . '/storage/seeds/ProjectSeeder.php';
-    echo "Database seeded successfully.\n";
+    try {
+        Database::connect();
+        echo "Database connection successful.\n";
+    } catch (PDOException $e) {
+        echo "Database connection failed: " . $e->getMessage() . "\n";
+        exit(1);
+    }
+
+    foreach (glob(__DIR__ . '/database/seeds/*.php') as $seedFile) {
+        require_once $seedFile;
+        $class = basename($seedFile, '.php');
+        if (class_exists($class)) {
+            $seeder = new $class();
+            $seeder->run();
+            echo "Seeded: " . $class . "\n";
+        }
+    }
 }
 
 function createController($name)

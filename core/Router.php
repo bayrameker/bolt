@@ -4,7 +4,12 @@ namespace Core;
 
 class Router
 {
-    private $routes = [];
+    private $routes = [
+        'GET' => [],
+        'POST' => [],
+        'PUT' => [],
+        'DELETE' => [],
+    ];
 
     public function get($uri, $callback)
     {
@@ -38,7 +43,17 @@ class Router
         }
 
         if (isset($this->routes[$method][$uri])) {
-            call_user_func($this->routes[$method][$uri], new Request(), new Response());
+            $callback = $this->routes[$method][$uri];
+
+            if (is_array($callback)) {
+                // Instantiate the controller
+                $controller = new $callback[0]();
+                $method = $callback[1];
+
+                call_user_func([$controller, $method], new Request(), new Response());
+            } else {
+                call_user_func($callback, new Request(), new Response());
+            }
         } else {
             header("HTTP/1.0 404 Not Found");
             echo "Not Found";
@@ -53,7 +68,7 @@ class Router
             $uri = strstr($uri, '?', true);
         }
 
-        $uri = rtrim($uri, '/');
+        $uri = trim($uri, '/');
         if (empty($uri)) {
             $uri = '/';
         }

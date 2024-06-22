@@ -9,8 +9,8 @@ class Application
     public function __construct()
     {
         $this->loadConfig();
-        $this->registerRoutes();
         Database::connect();
+        $this->registerRoutes();
     }
 
     private function loadConfig()
@@ -26,18 +26,12 @@ class Application
     private function registerRoutes()
     {
         $router = new Router();
+        $GLOBALS['router'] = $router; // Make router global
 
-        // Dynamically load routes from controllers
-        foreach (glob(__DIR__ . '/../app/Controllers/*.php') as $controllerFile) {
-            require_once $controllerFile;
-            $class = 'App\\Controllers\\' . basename($controllerFile, '.php');
-            if (class_exists($class) && method_exists($class, 'registerRoutes')) {
-                $controller = new $class();
-                $controller->registerRoutes($router);
-            }
+        // Load routes from the routes directory
+        foreach (glob(__DIR__ . '/../routes/*.php') as $routeFile) {
+            require_once $routeFile;
         }
-
-        $GLOBALS['router'] = $router;
     }
 
     public function run()

@@ -143,11 +143,6 @@ use Core\ViewRenderer;
 class {$name}Controller extends Controller
 {
 
-    public function registerRoutes(\$router)
-    {
-        \$router->get('/{$lname}', [\$this, 'index']);
-    }
-
     public function index(Request \$request, Response \$response)
     {
         

@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Services;
+namespace Core\AI\Agents;
 
 use GuzzleHttp\Client;
+use Core\AI\AIAgentInterface;
 
-class ChatGPTService
+class LlamaAgent implements AIAgentInterface
 {
     protected $client;
     protected $apiUrl;
@@ -13,11 +14,11 @@ class ChatGPTService
     public function __construct()
     {
         $this->client = new Client();
-        $this->apiUrl = getenv('CHATGPT_API_URL');
-        $this->apiKey = getenv('CHATGPT_API_KEY');
+        $this->apiUrl = getenv('LLAMA_API_URL');
+        $this->apiKey = getenv('LLAMA_API_KEY');
     }
 
-    public function generateText($prompt)
+    public function generateText(string $prompt): string
     {
         $response = $this->client->post($this->apiUrl . '/completions', [
             'headers' => [
@@ -25,7 +26,7 @@ class ChatGPTService
                 'Content-Type' => 'application/json',
             ],
             'json' => [
-                'model' => 'text-davinci-003',
+                'model' => 'text-llama-003',
                 'prompt' => $prompt,
                 'max_tokens' => 100,
             ],
@@ -33,5 +34,11 @@ class ChatGPTService
 
         $data = json_decode($response->getBody(), true);
         return $data['choices'][0]['text'];
+    }
+
+    public function performTask(array $parameters): array
+    {
+        // Implement other tasks specific to Llama if needed
+        return [];
     }
 }

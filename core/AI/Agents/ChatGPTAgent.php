@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Services;
+namespace Core\AI\Agents;
 
 use GuzzleHttp\Client;
+use Core\AI\AIAgentInterface;
 
-class ChatGPTService
+class ChatGPTAgent implements AIAgentInterface
 {
     protected $client;
     protected $apiUrl;
@@ -17,7 +18,7 @@ class ChatGPTService
         $this->apiKey = getenv('CHATGPT_API_KEY');
     }
 
-    public function generateText($prompt)
+    public function generateText(string $prompt): string
     {
         $response = $this->client->post($this->apiUrl . '/completions', [
             'headers' => [
@@ -33,5 +34,11 @@ class ChatGPTService
 
         $data = json_decode($response->getBody(), true);
         return $data['choices'][0]['text'];
+    }
+
+    public function performTask(array $parameters): array
+    {
+        // Implement other tasks specific to ChatGPT if needed
+        return [];
     }
 }

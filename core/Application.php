@@ -3,14 +3,18 @@
 namespace Core;
 
 use Dotenv\Dotenv;
+use Core\AI\AIManager;
 
 class Application
 {
+    public $aiManager;
+
     public function __construct()
     {
         $this->loadConfig();
-        Database::connect();
         $this->registerRoutes();
+        Database::connect();
+        $this->initializeServices();
     }
 
     private function loadConfig()
@@ -26,12 +30,23 @@ class Application
     private function registerRoutes()
     {
         $router = new Router();
-        $GLOBALS['router'] = $router; // Make router global
 
-        // Load routes from the routes directory
-        foreach (glob(__DIR__ . '/../routes/*.php') as $routeFile) {
-            require_once $routeFile;
+        // Dynamically load routes from controllers
+        foreach (glob(__DIR__ . '/../app/Controllers/*.php') as $controllerFile) {
+            require_once $controllerFile;
+            $class = 'App\\Controllers\\' . basename($controllerFile, '.php');
+            if (class_exists($class) && method_exists($class, 'registerRoutes')) {
+                $controller = new $class();
+                $controller->registerRoutes($router);
+            }
         }
+
+        $GLOBALS['router'] = $router;
+    }
+
+    private function initializeServices()
+    {
+        $this->aiManager = new AIManager();
     }
 
     public function run()

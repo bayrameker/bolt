@@ -1,111 +1,69 @@
 
-# Bolt Framework
+# Bolt PHP Framework
 
-Bolt is a lightweight and extendable PHP micro framework designed to simplify modern PHP application development with built-in support for AI integration.
+Bolt is a fast and lightweight PHP framework. Its simple and flexible structure makes it ideal for small to medium-sized projects.
 
 ## Features
 
-- MVC architecture
-- Simple and flexible routing system
-- Database ORM and migration support
-- Environment variable management with `.env` file
-- Command-line interface (CLI) for easy usage
-- Ready for AI integration
+- MVC (Model-View-Controller) architecture
+- Simple routing system
+- Easy and fast dependency injection
+- View rendering support
 
 ## Installation
 
-### Requirements
+1. Clone or download this project:
 
-- PHP 7.4 or higher
-- Composer
-
-### Step 1: Clone the Project
-
-```bash
-git clone https://github.com/bayrameker/bolt.git
+```sh
+git clone https://github.com/bayrameker/bolt
 cd bolt
 ```
 
-### Step 2: Install Dependencies
+2. Install the necessary dependencies:
 
-```bash
+```sh
 composer install
 ```
 
-### Step 3: Configure the .env File
+3. Create the `.env` file and configure the necessary settings:
 
-Create a `.env` file in the project root directory and configure it as follows:
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_NAME=your_database_name
-DB_USER=your_database_username
-DB_PASS=your_database_password
-APP_PORT=8080
+```sh
+cp .env.example .env
 ```
 
-### Step 4: Start the Server
+4. Start the server:
 
-```bash
+```sh
 php bolt serve
 ```
 
-Open your browser and navigate to `http://localhost:8080` to see your application running.
-
 ## Usage
 
-### Command-Line Interface (CLI)
+### Bolt Commands
 
-Bolt provides a CLI tool to perform various tasks easily.
+The available commands for the Bolt framework are:
 
-#### Create a Controller
+- `php bolt migrate` - Runs the database migrations.
+- `php bolt create:migration {name}` - Creates a new database migration.
+- `php bolt seed` - Runs the database seeders.
+- `php bolt controller {name} [-v]` - Creates a new controller. Use the `-v` option to also add a view and route.
+- `php bolt model {name}` - Creates a new model.
+- `php bolt service {name}` - Creates a new service.
+- `php bolt repository {name}` - Creates a new repository.
+- `php bolt dump-autoload` - Updates Composer autoload files.
+- `php bolt serve` - Starts the application.
 
-```bash
-php bolt controller Home
+### Router
+
+You can add new routes in the `routes/web.php` file:
+
+```php
+$router->get('/home', [App\Controllers\HomeController::class, 'index']);
 ```
 
-#### Create a Model
+### Controller
 
-```bash
-php bolt model User
-```
-
-#### Create a Service
-
-```bash
-php bolt service UserService
-```
-
-#### Create a Repository
-
-```bash
-php bolt repository UserRepository
-```
-
-#### Create a Migration
-
-```bash
-php bolt migration create_users_table
-```
-
-#### Run Migrations
-
-```bash
-php bolt migrate
-```
-
-#### Run Seeds
-
-```bash
-php bolt seed
-```
-
-### MVC Structure
-
-#### Controller
-
-Controllers are located in the `app/Controllers` directory. When you create a new controller, it looks like this:
+To create a new controller, create a new PHP file in the `app/Controllers` directory:
 
 ```php
 <?php
@@ -116,19 +74,23 @@ use Core\Controller;
 use Core\Request;
 use Core\Response;
 use Core\ViewRenderer;
+use App\Services\HomeService;
 
 class HomeController extends Controller
 {
-    public function registerRoutes($router)
+    protected $homeService;
+
+    public function __construct(HomeService $homeService)
     {
-        $router->get('/', [$this, 'index']);
+        $this->homeService = $homeService;
     }
 
     public function index(Request $request, Response $response)
     {
-        $viewRenderer = new ViewRenderer('home', [
-            'title' => 'Home Page',
-            'message' => 'Welcome to My Bolt Framework!',
+        $homeData = $this->homeService->getHomeData();
+        $viewRenderer = new ViewRenderer('home/index', [
+            'title' => $homeData->title,
+            'message' => $homeData->message,
             'layout' => 'layout'
         ]);
         $viewRenderer->render();
@@ -136,137 +98,114 @@ class HomeController extends Controller
 }
 ```
 
-#### Model
+### Service
 
-Models are located in the `app/Models` directory. When you create a new model, it looks like this:
-
-```php
-<?php
-
-namespace App\Models;
-
-use Core\Model;
-
-class User extends Model
-{
-    protected $fillable = ['name', 'email', 'password'];
-    protected $table = 'users';
-}
-```
-
-#### Service
-
-Services are located in the `app/Services` directory. When you create a new service, it looks like this:
+Services control the business logic. Create a new PHP file in the `app/Services` directory:
 
 ```php
 <?php
 
 namespace App\Services;
 
-use App\Repositories\UserRepository;
+use App\Repositories\HomeRepository;
 
-class UserService
+class HomeService
 {
-    protected $repository;
+    protected $homeRepository;
 
-    public function __construct(UserRepository $repository)
+    public function __construct(HomeRepository $homeRepository)
     {
-        $this->repository = $repository;
+        $this->homeRepository = $homeRepository;
     }
 
-    public function getAllUsers()
+    public function getHomeData()
     {
-        return $this->repository->findAll();
-    }
-
-    public function getUserById($id)
-    {
-        return $this->repository->find($id);
-    }
-
-    public function createUser($data)
-    {
-        return $this->repository->create($data);
-    }
-
-    public function updateUser($id, $data)
-    {
-        return $this->repository->update($id, $data);
-    }
-
-    public function deleteUser($id)
-    {
-        return $this->repository->delete($id);
+        return $this->homeRepository->getHomeData();
     }
 }
 ```
 
-#### Repository
+### Repository
 
-Repositories are located in the `app/Repositories` directory. When you create a new repository, it looks like this:
+Repositories control the data access layer. Create a new PHP file in the `app/Repositories` directory:
 
 ```php
 <?php
 
 namespace App\Repositories;
 
-use Core\Repository;
-use App\Models\User;
+use App\Models\Home;
 
-class UserRepository extends Repository
+class HomeRepository
 {
-    public function __construct()
+    public function getHomeData()
     {
-        parent::__construct(new User());
+        return new Home('Home Page', 'Welcome to My Bolt Framework!');
     }
 }
 ```
 
-#### Migration
+### Model
 
-Migration files are located in the `database/migrations` directory. When you create a new migration, it looks like this:
+Models represent the data structure. Create a new PHP file in the `app/Models` directory:
 
 ```php
 <?php
 
-use Core\Migration;
+namespace App\Models;
 
-class CreateUsersTable
+class Home
 {
-    public function up()
+    public $title;
+    public $message;
+
+    public function __construct($title, $message)
     {
-        $migration = new Migration();
-        $migration->createTable('users', function ($table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email');
-            $table->string('password');
-            $table->timestamps();
-        });
+        $this->title = $title;
+        $this->message = $message;
     }
 }
 ```
 
-## Structure
+### View
 
-- `app/Controllers`: Controller files
-- `app/Models`: Model files
-- `app/Services`: Service files
-- `app/Repositories`: Repository files
-- `app/Views`: View files
-- `core`: Framework core files
-- `database/migrations`: Migration files
-- `database/seeds`: Seed files
-- `public`: Publicly accessible files (CSS, JS, images, etc.)
-- `.env`: Environment variables
+View files control the HTML content displayed to the user. Create new PHP files in the `app/Views` directory:
+
+#### `app/Views/home/index.php`
+
+```php
+<main>
+    <h1><?= $title ?? 'Default Title' ?></h1>
+    <p><?= $message ?? 'Default Message' ?></p>
+</main>
+```
+
+#### `app/Views/layout.php`
+
+```php
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= $title ?? 'Default Title' ?></title>
+</head>
+<body>
+    <?= $content ?>
+</body>
+</html>
+```
 
 ## Contributing
 
-If you want to contribute to Bolt, please submit a pull request. We welcome contributions!
+We welcome contributions! Please open an issue first to discuss any changes you would like to make.
+
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
-```
-
-This README provides a comprehensive overview of the Bolt framework, including installation, usage, and a description of its structure and features.
+This project is licensed under the MIT License. See the `LICENSE` file for more information.

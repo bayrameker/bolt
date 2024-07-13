@@ -1,4 +1,7 @@
 RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^ index.php [QSA,L]
+
+# Public dizinindeki index.php dosyasına yönlendir
+RewriteRule ^$ public/index.php [L]
+
+# Tüm diğer istekleri public dizinine yönlendir
+RewriteRule (.*) public/$1 [L]

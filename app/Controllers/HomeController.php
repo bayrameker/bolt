@@ -12,7 +12,7 @@ class HomeController extends Controller
 
     public function index(Request $request, Response $response)
     {
-        $viewRenderer = new ViewRenderer('home', [
+        $viewRenderer = new ViewRenderer('home/index', [
             'title' => 'Home Page',
             'message' => 'Welcome to My Bolt Framework!',
             'layout' => 'layout'

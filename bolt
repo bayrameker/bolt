@@ -40,6 +40,9 @@ switch ($command) {
         $name = $argv[2] ?? null;
         createRepository($name);
         break;
+    case 'dump-autoload':
+        dumpAutoload();
+        break;
     case 'serve':
         serve();
         break;
@@ -142,10 +145,8 @@ use Core\ViewRenderer;
 
 class {$name}Controller extends Controller
 {
-
     public function index(Request \$request, Response \$response)
     {
-        
         \$viewRenderer = new ViewRenderer('{$lname}/index', [
             'title' => '{$name} Page',
             'message' => 'Welcome to My Bolt Framework!',
@@ -157,11 +158,49 @@ class {$name}Controller extends Controller
 EOT;
         file_put_contents(__DIR__ . "/app/Controllers/{$name}Controller.php", $controllerTemplate);
         echo "{$name}Controller created successfully.\n";
+
+        // View dosyasını oluşturma
+        $viewDir = __DIR__ . "/app/Views/{$lname}";
+        if (!is_dir($viewDir)) {
+            mkdir($viewDir, 0755, true);
+        }
+
+        $viewTemplate = <<<EOT
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= \$title ?? '{$name} Page' ?></title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <?php include __DIR__ . "/../partials/header.php"; ?>
+    </header>
+    <main>
+        <h1><?= \$message ?? 'Welcome to My Bolt Framework!' ?></h1>
+        <p>This is the {$name} view.</p>
+    </main>
+    <footer>
+        <?php include __DIR__ . "/../partials/footer.php"; ?>
+    </footer>
+</body>
+</html>
+EOT;
+        file_put_contents("{$viewDir}/index.php", $viewTemplate);
+        echo "View for {$name}Controller created successfully.\n";
+
+        // Route ekleme
+        $routeTemplate = <<<EOT
+\$router->get('/{$lname}', [App\Controllers\\{$name}Controller::class, 'index']);
+EOT;
+        file_put_contents(__DIR__ . "/routes/web.php", $routeTemplate . PHP_EOL, FILE_APPEND);
+        echo "Route for {$name}Controller added to web.php successfully.\n";
     } else {
         echo "Controller name is required.\n";
     }
 }
-
 
 function createModel($name)
 {
@@ -237,7 +276,6 @@ EOT;
     }
 }
 
-
 function createRepository($name)
 {
     if ($name) {
@@ -262,6 +300,13 @@ EOT;
     } else {
         echo "Repository name is required.\n";
     }
+}
+
+function dumpAutoload()
+{
+    echo "Dumping autoload...\n";
+    exec('composer dump-autoload');
+    echo "Autoload dumped successfully.\n";
 }
 
 function serve()

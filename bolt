@@ -303,7 +303,7 @@ function initTailwind()
 
     // Tailwind CSS ve bağımlılıkları yükle
     echo "Installing Tailwind CSS and dependencies...\n";
-    exec('npm install tailwindcss postcss-cli autoprefixer');
+    exec('npm install tailwindcss postcss postcss-cli autoprefixer');
 
     // Tailwind CSS yapılandırma dosyasını oluştur
     echo "Creating Tailwind CSS configuration file...\n";

@@ -33,9 +33,8 @@ class Router
             }
 
             $this->routes['GET'][$uri] = $callback;
-            // echo "Route GET $uri registered successfully with controller $controller and method $method.\n";
         } catch (\Exception $e) {
-            // echo "Error registering route GET $uri: " . $e->getMessage() . "\n";
+            echo "Error registering route GET $uri: " . $e->getMessage() . "\n";
         }
     }
 
@@ -59,56 +58,76 @@ class Router
         $uri = $this->getUri();
         $method = $_SERVER['REQUEST_METHOD'];
 
-        //echo "Resolving route for URI: '$uri' with method: $method\n";
-
-        // Mevcut rotaları yazdır
-        // echo "Available routes for method $method:\n";
-        foreach ($this->routes[$method] as $route => $callback) {
-            // echo "  $route\n";
-        }
-
         if (isset($this->routes[$method][$uri])) {
             $callback = $this->routes[$method][$uri];
-            //echo "Matched route: $uri\n";
-            //echo "Callback: " . print_r($callback, true) . "\n";
 
             if (is_array($callback)) {
-                $controller = new $callback[0]();
+                $controllerClass = $callback[0];
                 $method = $callback[1];
 
+                $controller = $this->getControllerInstance($controllerClass);
+
                 try {
-                   // echo "Calling controller method: " . get_class($controller) . "::" . $method . "\n";
                     call_user_func([$controller, $method], new Request(), new Response());
                 } catch (\Exception $e) {
-                    // echo "Error calling controller method: " . $e->getMessage() . "\n";
+                    echo "Error calling controller method: " . $e->getMessage() . "\n";
                 }
             } else {
                 try {
-                    //echo "Calling callback\n";
                     call_user_func($callback, new Request(), new Response());
                 } catch (\Exception $e) {
-                    //echo "Error calling callback: " . $e->getMessage() . "\n";
+                    echo "Error calling callback: " . $e->getMessage() . "\n";
                 }
             }
         } else {
-            // echo "Route not found for URI: '$uri' with method: $method\n";
-            //echo "Defined routes:\n" . print_r($this->routes, true) . "\n";
             header("HTTP/1.0 404 Not Found");
             echo "Not Found";
         }
     }
 
+    private function getControllerInstance($controllerClass)
+    {
+        $reflectionClass = new \ReflectionClass($controllerClass);
+        $constructor = $reflectionClass->getConstructor();
+
+        if (!$constructor) {
+            return new $controllerClass();
+        }
+
+        $parameters = $constructor->getParameters();
+        $dependencies = [];
+
+        foreach ($parameters as $parameter) {
+            $dependencyType = $parameter->getType();
+            if ($dependencyType instanceof \ReflectionNamedType && !$dependencyType->isBuiltin()) {
+                $dependencies[] = $this->resolveDependency($dependencyType->getName());
+            }
+        }
+
+        return $reflectionClass->newInstanceArgs($dependencies);
+    }
+
+    private function resolveDependency($class)
+    {
+        switch ($class) {
+            case 'App\Repositories\HomeRepository':
+                return new \App\Repositories\HomeRepository();
+            case 'App\Services\HomeService':
+                return new \App\Services\HomeService($this->resolveDependency('App\Repositories\HomeRepository'));
+            default:
+                return new $class();
+        }
+    }
+
     private function getUri()
     {
-        $basePath = '/bolt'; // Projenizin alt dizin yolu
+        $basePath = '/bolt';
         $uri = $_SERVER['REQUEST_URI'];
-        // echo "Original URI: $uri\n";
 
         if (strpos($uri, '?') !== false) {
             $uri = strstr($uri, '?', true);
         }
 
-        // basePath'i URI'den çıkar
         if ($basePath && strpos($uri, $basePath) === 0) {
             $uri = substr($uri, strlen($basePath));
         }
@@ -117,10 +136,8 @@ class Router
         if (empty($uri)) {
             $uri = '/';
         } else {
-            $uri = '/' . $uri; // Başına slash ekle
+            $uri = '/' . $uri;
         }
-
-        //echo "Processed URI after basePath removal: $uri\n";
 
         return $uri;
     }

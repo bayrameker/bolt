@@ -4,8 +4,8 @@ namespace Core;
 
 class Response
 {
-    public function setStatusCode(int $code)
+    public function setBody($content)
     {
-        http_response_code($code);
+        echo $content;
     }
 }

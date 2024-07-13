@@ -303,11 +303,28 @@ function initTailwind()
 
     // Tailwind CSS ve bağımlılıkları yükle
     echo "Installing Tailwind CSS and dependencies...\n";
-    exec('npm install tailwindcss postcss autoprefixer');
+    exec('npm install tailwindcss postcss-cli autoprefixer');
 
     // Tailwind CSS yapılandırma dosyasını oluştur
     echo "Creating Tailwind CSS configuration file...\n";
     exec('npx tailwindcss init');
+
+    // tailwind.config.js dosyasını oluştur ve güncelle
+    echo "Updating tailwind.config.js file...\n";
+    $tailwindConfig = <<<EOT
+module.exports = {
+  content: [
+    './app/Views/**/*.php',
+    './app/Views/*.php',
+    './public/**/*.html',
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+EOT;
+    file_put_contents(__DIR__ . '/tailwind.config.js', $tailwindConfig);
 
     // postcss.config.js dosyasını oluştur
     echo "Creating postcss.config.js file...\n";
@@ -336,7 +353,7 @@ EOT;
     // package.json'a script ekle
     echo "Adding build script to package.json...\n";
     $packageJson = json_decode(file_get_contents(__DIR__ . '/package.json'), true);
-    $packageJson['scripts']['build:css'] = 'postcss src/styles.css -o public/css/styles.css';
+    $packageJson['scripts']['build:css'] = 'npx postcss src/styles.css -o public/css/styles.css';
     file_put_contents(__DIR__ . '/package.json', json_encode($packageJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
     // CSS'i derle

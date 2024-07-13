@@ -166,27 +166,12 @@ EOT;
         }
 
         $viewTemplate = <<<EOT
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= \$title ?? '{$name} Page' ?></title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-    <header>
-        <?php include __DIR__ . "/../partials/header.php"; ?>
-    </header>
+
     <main>
         <h1><?= \$message ?? 'Welcome to My Bolt Framework!' ?></h1>
         <p>This is the {$name} view.</p>
     </main>
-    <footer>
-        <?php include __DIR__ . "/../partials/footer.php"; ?>
-    </footer>
-</body>
-</html>
+   
 EOT;
         file_put_contents("{$viewDir}/index.php", $viewTemplate);
         echo "View for {$name}Controller created successfully.\n";

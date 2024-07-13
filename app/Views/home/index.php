@@ -3,7 +3,7 @@
     <p><?= $message ?></p>
     <p>This is a simple page running with Bolt framework.</p>
 
-    <section class="features ">
+    <section class="features">
         <h3>Features</h3>
         <ul class="list-unstyled mx-auto">
             <li><i class="fas fa-cogs"></i> MVC (Model-View-Controller) Architecture</li>

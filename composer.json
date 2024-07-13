@@ -1,6 +1,7 @@
 {
     "name": "bayrameker/my-bolt-framework",
     "description": "A modern PHP framework with Bolt CLI",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "App\\": "app/",

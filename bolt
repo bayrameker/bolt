@@ -41,6 +41,9 @@ switch ($command) {
         $name = $argv[2] ?? null;
         createRepository($name);
         break;
+    case 'tailwind:init':
+        initTailwind();
+        break;
     case 'dump-autoload':
         dumpAutoload();
         break;
@@ -288,6 +291,59 @@ EOT;
     } else {
         echo "Repository name is required.\n";
     }
+}
+
+function initTailwind()
+{
+    // Node.js ve npm gereklidir
+    if (!shell_exec('which npm')) {
+        echo "Node.js and npm are required. Please install them first.\n";
+        exit(1);
+    }
+
+    // Tailwind CSS ve bağımlılıkları yükle
+    echo "Installing Tailwind CSS and dependencies...\n";
+    exec('npm install tailwindcss postcss autoprefixer');
+
+    // Tailwind CSS yapılandırma dosyasını oluştur
+    echo "Creating Tailwind CSS configuration file...\n";
+    exec('npx tailwindcss init');
+
+    // postcss.config.js dosyasını oluştur
+    echo "Creating postcss.config.js file...\n";
+    $postcssConfig = <<<EOT
+module.exports = {
+  plugins: [
+    require('tailwindcss'),
+    require('autoprefixer'),
+  ],
+}
+EOT;
+    file_put_contents(__DIR__ . '/postcss.config.js', $postcssConfig);
+
+    // styles.css dosyasını oluştur
+    echo "Creating src/styles.css file...\n";
+    if (!is_dir(__DIR__ . '/src')) {
+        mkdir(__DIR__ . '/src', 0755, true);
+    }
+    $stylesCss = <<<EOT
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+EOT;
+    file_put_contents(__DIR__ . '/src/styles.css', $stylesCss);
+
+    // package.json'a script ekle
+    echo "Adding build script to package.json...\n";
+    $packageJson = json_decode(file_get_contents(__DIR__ . '/package.json'), true);
+    $packageJson['scripts']['build:css'] = 'postcss src/styles.css -o public/css/styles.css';
+    file_put_contents(__DIR__ . '/package.json', json_encode($packageJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+
+    // CSS'i derle
+    echo "Building CSS...\n";
+    exec('npm run build:css');
+
+    echo "Tailwind CSS initialized successfully.\n";
 }
 
 function dumpAutoload()

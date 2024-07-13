@@ -1,15 +1,45 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f4f4f4;
+    color: #333;
+    transition: background-color 0.3s;
 }
 
-.header-content {
-    background-color: #f8f9fa;
-    padding: 20px;
+.content {
+    padding: 2em;
     text-align: center;
 }
 
-.footer-content {
-    background-color: #f1f1f1;
-    padding: 10px;
+.features ul, .more-info ul {
+    list-style: none;
+    padding: 0;
     text-align: center;
+    display: inline-block;
+}
+
+.features ul li, .more-info ul li {
+    margin-bottom: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.features ul li i, .more-info ul li i {
+    margin-right: 0.5em;
+    color: #007BFF;
+}
+
+.cta .btn {
+    background: #007BFF;
+    color: #fff;
+    padding: 0.75em 1.5em;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.cta .btn:hover {
+    background-color: #0056b3;
 }

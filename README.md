@@ -1,4 +1,6 @@
 
+
+
 # Bolt PHP Framework
 
 Bolt is a fast and lightweight PHP framework. Its simple and flexible structure makes it ideal for small to medium-sized projects.
@@ -12,11 +14,11 @@ Bolt is a fast and lightweight PHP framework. Its simple and flexible structure 
 
 ## Installation
 
-1. Clone or download this project:
+1. Create a new project using Composer:
 
 ```sh
-git clone https://github.com/bayrameker/bolt
-cd bolt
+composer create-project bayrameker/my-bolt-framework new-project
+cd new-project
 ```
 
 2. Install the necessary dependencies:

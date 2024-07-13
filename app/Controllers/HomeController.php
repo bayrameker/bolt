@@ -9,10 +9,6 @@ use Core\ViewRenderer;
 
 class HomeController extends Controller
 {
-    public function registerRoutes($router)
-    {
-        $router->get('/', [$this, 'index']);
-    }
 
     public function index(Request $request, Response $response)
     {

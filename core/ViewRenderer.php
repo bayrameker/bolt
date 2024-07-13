@@ -38,6 +38,7 @@ class ViewRenderer
             $layoutFile = __DIR__ . '/../app/Views/' . $this->data['layout'] . '.php';
             if (file_exists($layoutFile)) {
                 ob_start();
+                $view = $this->viewPath; // $view değişkenini set ediyoruz
                 include $layoutFile;
                 $layoutContent = ob_get_clean();
                 $content = str_replace('{{ content }}', $content, $layoutContent);

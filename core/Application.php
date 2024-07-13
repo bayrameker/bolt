@@ -8,13 +8,13 @@ use Core\AI\AIManager;
 class Application
 {
     public $aiManager;
+    private $router;
 
     public function __construct()
     {
         $this->loadConfig();
-        $this->registerRoutes();
-        Database::connect();
         $this->initializeServices();
+        $this->registerRoutes();
     }
 
     private function loadConfig()
@@ -29,28 +29,26 @@ class Application
 
     private function registerRoutes()
     {
-        $router = new Router();
+        $this->router = new Router();
 
-        // Dynamically load routes from controllers
-        foreach (glob(__DIR__ . '/../app/Controllers/*.php') as $controllerFile) {
-            require_once $controllerFile;
-            $class = 'App\\Controllers\\' . basename($controllerFile, '.php');
-            if (class_exists($class) && method_exists($class, 'registerRoutes')) {
-                $controller = new $class();
-                $controller->registerRoutes($router);
-            }
-        }
-
-        $GLOBALS['router'] = $router;
+        // Load routes from routes/web.php
+        global $router; // global değişkeni tanımlayın
+        $router = $this->router;
+        require_once __DIR__ . '/../routes/web.php';
     }
 
     private function initializeServices()
     {
-        $this->aiManager = new AIManager();
+        try {
+            $this->aiManager = new AIManager();
+        } catch (\Exception $e) {
+            // AIManager yapılandırılamazsa, hatayı loglayın ve devam edin
+            error_log($e->getMessage());
+        }
     }
 
     public function run()
     {
-        $GLOBALS['router']->resolve();
+        $this->router->resolve();
     }
 }

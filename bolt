@@ -26,7 +26,8 @@ switch ($command) {
         break;
     case 'controller':
         $name = $argv[2] ?? null;
-        createController($name);
+        $viewRouteFlag = $argv[3] ?? null;
+        createController($name, $viewRouteFlag);
         break;
     case 'model':
         $name = $argv[2] ?? null;
@@ -129,7 +130,7 @@ function seed()
     }
 }
 
-function createController($name)
+function createController($name, $viewRouteFlag)
 {
     $lname = strtolower($name);
     if ($name) {
@@ -159,13 +160,14 @@ EOT;
         file_put_contents(__DIR__ . "/app/Controllers/{$name}Controller.php", $controllerTemplate);
         echo "{$name}Controller created successfully.\n";
 
-        // View dosyasını oluşturma
-        $viewDir = __DIR__ . "/app/Views/{$lname}";
-        if (!is_dir($viewDir)) {
-            mkdir($viewDir, 0755, true);
-        }
+        if ($viewRouteFlag == '-v') {
+            // View dosyasını oluşturma
+            $viewDir = __DIR__ . "/app/Views/{$lname}";
+            if (!is_dir($viewDir)) {
+                mkdir($viewDir, 0755, true);
+            }
 
-        $viewTemplate = <<<EOT
+            $viewTemplate = <<<EOT
 
     <main>
         <h1><?= \$message ?? 'Welcome to My Bolt Framework!' ?></h1>
@@ -173,15 +175,16 @@ EOT;
     </main>
    
 EOT;
-        file_put_contents("{$viewDir}/index.php", $viewTemplate);
-        echo "View for {$name}Controller created successfully.\n";
+            file_put_contents("{$viewDir}/index.php", $viewTemplate);
+            echo "View for {$name}Controller created successfully.\n";
 
-        // Route ekleme
-        $routeTemplate = <<<EOT
+            // Route ekleme
+            $routeTemplate = <<<EOT
 \$router->get('/{$lname}', [App\Controllers\\{$name}Controller::class, 'index']);
 EOT;
-        file_put_contents(__DIR__ . "/routes/web.php", $routeTemplate . PHP_EOL, FILE_APPEND);
-        echo "Route for {$name}Controller added to web.php successfully.\n";
+            file_put_contents(__DIR__ . "/routes/web.php", $routeTemplate . PHP_EOL, FILE_APPEND);
+            echo "Route for {$name}Controller added to web.php successfully.\n";
+        }
     } else {
         echo "Controller name is required.\n";
     }

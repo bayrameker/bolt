@@ -1,5 +1,4 @@
 <?php
-
 namespace Core;
 
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -15,6 +14,9 @@ class ViewRenderer
         $this->viewPath = $viewPath;
         $this->data = $data;
         $this->annotations = new AnnotationReader();
+        $this->data['lang'] = function($key) {
+            return lang($key);
+        };
     }
 
     public function render()

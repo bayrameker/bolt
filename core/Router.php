@@ -1,5 +1,4 @@
 <?php
-
 namespace Core;
 
 class Router
@@ -109,14 +108,24 @@ class Router
 
     private function resolveDependency($class)
     {
-        switch ($class) {
-            case 'App\Repositories\HomeRepository':
-                return new \App\Repositories\HomeRepository();
-            case 'App\Services\HomeService':
-                return new \App\Services\HomeService($this->resolveDependency('App\Repositories\HomeRepository'));
-            default:
-                return new $class();
+        $reflectionClass = new \ReflectionClass($class);
+        $constructor = $reflectionClass->getConstructor();
+
+        if (!$constructor) {
+            return new $class();
         }
+
+        $parameters = $constructor->getParameters();
+        $dependencies = [];
+
+        foreach ($parameters as $parameter) {
+            $dependencyType = $parameter->getType();
+            if ($dependencyType instanceof \ReflectionNamedType && !$dependencyType->isBuiltin()) {
+                $dependencies[] = $this->resolveDependency($dependencyType->getName());
+            }
+        }
+
+        return $reflectionClass->newInstanceArgs($dependencies);
     }
 
     private function getUri()

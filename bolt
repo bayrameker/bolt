@@ -47,8 +47,33 @@ switch ($command) {
     case 'dump-autoload':
         dumpAutoload();
         break;
+    case 'material:init':
+        initMaterialUI();
+        break;
     case 'serve':
         serve();
+        break;
+    case 'react:init':
+        initReact();
+        buildReact();
+        updateLayout('react');
+        break;
+    case 'vue:init':
+        initVue();
+        buildVue();
+        updateLayout('vue');
+        break;
+    case 'react:build':
+        buildReact();
+        break;
+    case 'vue:build':
+        buildVue();
+        break;
+    case 'typescript:init':
+        initTypeScript();
+        break;
+    case 'js:init':
+        initJavaScript();
         break;
     default:
         echo "Invalid command.\n";
@@ -137,6 +162,9 @@ function createController($name, $viewRouteFlag)
 {
     $lname = strtolower($name);
     if ($name) {
+        $useReact = file_exists(__DIR__ . '/../config/react_initialized');
+        $useVue = file_exists(__DIR__ . '/../config/vue_initialized');
+
         $controllerTemplate = <<<EOT
 <?php
 
@@ -160,11 +188,57 @@ class {$name}Controller extends Controller
     }
 }
 EOT;
+
+        if ($useReact || $useVue) {
+            $controllerTemplate = <<<EOT
+<?php
+
+namespace App\Controllers;
+
+use Core\Controller;
+use Core\Request;
+use Core\Response;
+use Core\ViewRenderer;
+
+class {$name}Controller extends Controller
+{
+    public function index(Request \$request, Response \$response)
+    {
+        \$viewRenderer = new ViewRenderer('{$lname}/index', [
+            'title' => '{$name} Page',
+            'message' => 'Welcome to My Bolt Framework!',
+            'layout' => 'layout',
+            'useReact' => $useReact,
+            'useVue' => $useVue,
+            'componentProps' => ['message' => 'Welcome to My Bolt Framework!']
+        ]);
+        \$viewRenderer->render();
+    }
+
+    public function renderReactComponent()
+    {
+        \$viewRenderer = new ViewRenderer('', []);
+        \$viewRenderer->renderReactComponent('MyReactComponent', [
+            'message' => 'Welcome to My Bolt Framework!'
+        ]);
+    }
+
+    public function renderVueComponent()
+    {
+        \$viewRenderer = new ViewRenderer('', []);
+        \$viewRenderer->renderVueComponent('MyVueComponent', [
+            'message' => 'Welcome to My Bolt Framework!'
+        ]);
+    }
+}
+EOT;
+        }
+
         file_put_contents(__DIR__ . "/app/Controllers/{$name}Controller.php", $controllerTemplate);
         echo "{$name}Controller created successfully.\n";
 
         if ($viewRouteFlag == '-v') {
-            // View dosyasını oluşturma
+            // Create the view directory
             $viewDir = __DIR__ . "/app/Views/{$lname}";
             if (!is_dir($viewDir)) {
                 mkdir($viewDir, 0755, true);
@@ -178,13 +252,49 @@ EOT;
     </main>
    
 EOT;
+
+            if ($useReact) {
+                $viewTemplate .= <<<EOT
+
+    <div id="react-root"></div>
+    <script>
+        window.REACT_APP_PROPS = <?= json_encode(\$componentProps) ?>;
+    </script>
+    <script src="/react-app/build/static/js/main.js"></script>
+EOT;
+            }
+
+            if ($useVue) {
+                $viewTemplate .= <<<EOT
+
+    <div id="vue-root"></div>
+    <script>
+        window.VUE_APP_PROPS = <?= json_encode(\$componentProps) ?>;
+    </script>
+    <script src="/vue-app/dist/js/app.js"></script>
+EOT;
+            }
+
             file_put_contents("{$viewDir}/index.php", $viewTemplate);
             echo "View for {$name}Controller created successfully.\n";
 
-            // Route ekleme
+            // Add the route
             $routeTemplate = <<<EOT
 \$router->get('/{$lname}', [App\Controllers\\{$name}Controller::class, 'index']);
 EOT;
+
+            if ($useReact) {
+                $routeTemplate .= <<<EOT
+\$router->get('/{$lname}/react', [App\Controllers\\{$name}Controller::class, 'renderReactComponent']);
+EOT;
+            }
+
+            if ($useVue) {
+                $routeTemplate .= <<<EOT
+\$router->get('/{$lname}/vue', [App\Controllers\\{$name}Controller::class, 'renderVueComponent']);
+EOT;
+            }
+
             file_put_contents(__DIR__ . "/routes/web.php", $routeTemplate . PHP_EOL, FILE_APPEND);
             echo "Route for {$name}Controller added to web.php successfully.\n";
         }
@@ -192,6 +302,7 @@ EOT;
         echo "Controller name is required.\n";
     }
 }
+
 
 function createModel($name)
 {
@@ -376,4 +487,173 @@ function serve()
     $host = 'localhost';
     echo "Starting server on http://$host:$port\n";
     exec("php -S $host:$port -t public");
+}
+
+function initMaterialUI()
+{
+    // Ensure Node.js and npm are installed
+    if (!shell_exec('which npm')) {
+        echo "Node.js and npm are required. Please install them first.\n";
+        exit(1);
+    }
+
+    // Install Material UI and dependencies
+    echo "Installing Material UI and dependencies...\n";
+    exec('npm install @mui/material @emotion/react @emotion/styled');
+
+    // Install Roboto font
+    echo "Installing Roboto font...\n";
+    exec('npm install @fontsource/roboto');
+
+    // Install Material Icons
+    echo "Installing Material UI Icons...\n";
+    exec('npm install @mui/icons-material');
+
+    echo "Material UI initialized successfully.\n";
+}
+
+
+function initReact()
+{
+    if (!shell_exec('which npm')) {
+        echo "Node.js and npm are required. Please install them first.\n";
+        exit(1);
+    }
+
+    echo "Initializing React app...\n";
+    exec('npx create-react-app public/react-app', $output, $return_var);
+    if ($return_var !== 0) {
+        echo "Failed to initialize React app. Error: " . implode("\n", $output) . "\n";
+        return;
+    }
+
+    echo "Installing Material-UI...\n";
+    exec('cd public/react-app && npm install @mui/material @emotion/react @emotion/styled', $output, $return_var);
+    if ($return_var !== 0) {
+        echo "Failed to install Material-UI. Error: " . implode("\n", $output) . "\n";
+        return;
+    }
+
+    echo "React app with Material-UI initialized successfully.\n";
+
+    // Create a marker file
+    file_put_contents(__DIR__ . '/../config/react_initialized', 'true');
+}
+
+
+
+function initVue()
+{
+    if (!shell_exec('which npm')) {
+        echo "Node.js and npm are required. Please install them first.\n";
+        exit(1);
+    }
+
+    echo "Installing Vue CLI...\n";
+    exec('npm install -g @vue/cli');
+
+    echo "Creating Vue project...\n";
+    exec('vue create public/vue-app');
+
+    echo "Vue initialized successfully.\n";
+
+    // Create a marker file
+    file_put_contents(__DIR__ . '/../config/vue_initialized', 'true');
+}
+
+
+function buildReact()
+{
+    if (!shell_exec('which npm')) {
+        echo "Node.js and npm are required. Please install them first.\n";
+        exit(1);
+    }
+
+    echo "Building React app...\n";
+    exec('cd public/react-app && npm run build');
+    echo "React app built successfully.\n";
+}
+
+function buildVue()
+{
+    if (!shell_exec('which npm')) {
+        echo "Node.js and npm are required. Please install them first.\n";
+        exit(1);
+    }
+
+    echo "Building Vue.js app...\n";
+    exec('cd public/vue-app && npm run build');
+    echo "Vue.js app built successfully.\n";
+}
+
+function updateLayout($framework)
+{
+    $layoutFile = __DIR__ . '/../app/Views/layout.php';
+    $layoutContent = file_get_contents($layoutFile);
+
+    if ($framework === 'react') {
+        $scriptTag = '<script src="/react-app/build/static/js/main.js"></script>';
+        if (!strpos($layoutContent, $scriptTag)) {
+            $layoutContent = str_replace('</body>', "$scriptTag\n</body>", $layoutContent);
+        }
+    } elseif ($framework === 'vue') {
+        $scriptTag = '<script src="/vue-app/dist/js/app.js"></script>';
+        if (!strpos($layoutContent, $scriptTag)) {
+            $layoutContent = str_replace('</body>', "$scriptTag\n</body>", $layoutContent);
+        }
+    }
+
+    file_put_contents($layoutFile, $layoutContent);
+    echo "Layout updated for {$framework}.\n";
+}
+
+function initTypeScript()
+{
+    if (!shell_exec('which npm')) {
+        echo "Node.js and npm are required. Please install them first.\n";
+        exit(1);
+    }
+
+    echo "Installing TypeScript and dependencies...\n";
+    exec('npm install typescript @types/node @types/react @types/react-dom @types/jest');
+
+    echo "Creating tsconfig.json...\n";
+    $tsconfig = <<<EOT
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src"]
+}
+EOT;
+    file_put_contents(__DIR__ . '/tsconfig.json', $tsconfig);
+
+    echo "TypeScript initialized successfully.\n";
+}
+
+function initJavaScript()
+{
+    if (!shell_exec('which npm')) {
+        echo "Node.js and npm are required. Please install them first.\n";
+        exit(1);
+    }
+
+    echo "Initializing JavaScript project...\n";
+    exec('npm init -y');
+
+    echo "JavaScript initialized successfully.\n";
 }

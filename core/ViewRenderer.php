@@ -69,4 +69,18 @@ class ViewRenderer
         }
         return $content;
     }
+
+    public function renderReactComponent($component, $props = [])
+    {
+        echo "<div id=\"react-root\"></div>";
+        echo "<script>window.REACT_APP_PROPS = " . json_encode($props) . ";</script>";
+        echo "<script src=\"/react-app/build/static/js/main.js\"></script>";
+    }
+
+    public function renderVueComponent($component, $props = [])
+    {
+        echo "<div id=\"vue-root\"></div>";
+        echo "<script>window.VUE_APP_PROPS = " . json_encode($props) . ";</script>";
+        echo "<script src=\"/vue-app/dist/js/app.js\"></script>";
+    }
 }

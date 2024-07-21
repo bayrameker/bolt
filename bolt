@@ -47,8 +47,23 @@ switch ($command) {
     case 'dump-autoload':
         dumpAutoload();
         break;
+    case 'material:init':
+        initMaterialUI();
+        break;
     case 'serve':
         serve();
+        break;
+    case 'react:init':
+        initReact();
+        break;
+    case 'vue:init':
+        initVue();
+        break;
+    case 'typescript:init':
+        initTypeScript();
+        break;
+    case 'js:init':
+        initJavaScript();
         break;
     default:
         echo "Invalid command.\n";
@@ -376,4 +391,108 @@ function serve()
     $host = 'localhost';
     echo "Starting server on http://$host:$port\n";
     exec("php -S $host:$port -t public");
+}
+
+function initMaterialUI()
+{
+    // Node.js ve npm gereklidir
+    if (!shell_exec('which npm')) {
+        echo "Node.js and npm are required. Please install them first.\n";
+        exit(1);
+    }
+
+    // Material UI ve bağımlılıkları yükle
+    echo "Installing Material UI and dependencies...\n";
+    exec('npm install @mui/material @emotion/react @emotion/styled');
+
+    // Material UI fontunu ekle
+    echo "Installing Roboto font...\n";
+    exec('npm install @fontsource/roboto');
+
+    // Material UI ikonu ekle
+    echo "Installing Material UI Icons...\n";
+    exec('npm install @mui/icons-material');
+
+    echo "Material UI initialized successfully.\n";
+}
+
+
+function initReact()
+{
+    if (!shell_exec('which npm')) {
+        echo "Node.js and npm are required. Please install them first.\n";
+        exit(1);
+    }
+
+    echo "Installing React and dependencies...\n";
+    exec('npx create-react-app public/react-app');
+
+    echo "React initialized successfully.\n";
+}
+
+function initVue()
+{
+    if (!shell_exec('which npm')) {
+        echo "Node.js and npm are required. Please install them first.\n";
+        exit(1);
+    }
+
+    echo "Installing Vue CLI...\n";
+    exec('npm install -g @vue/cli');
+
+    echo "Creating Vue project...\n";
+    exec('vue create public/vue-app');
+
+    echo "Vue initialized successfully.\n";
+}
+
+function initTypeScript()
+{
+    if (!shell_exec('which npm')) {
+        echo "Node.js and npm are required. Please install them first.\n";
+        exit(1);
+    }
+
+    echo "Installing TypeScript and dependencies...\n";
+    exec('npm install typescript @types/node @types/react @types/react-dom @types/jest');
+
+    echo "Creating tsconfig.json...\n";
+    $tsconfig = <<<EOT
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src"]
+}
+EOT;
+    file_put_contents(__DIR__ . '/tsconfig.json', $tsconfig);
+
+    echo "TypeScript initialized successfully.\n";
+}
+
+function initJavaScript()
+{
+    if (!shell_exec('which npm')) {
+        echo "Node.js and npm are required. Please install them first.\n";
+        exit(1);
+    }
+
+    echo "Initializing JavaScript project...\n";
+    exec('npm init -y');
+
+    echo "JavaScript initialized successfully.\n";
 }

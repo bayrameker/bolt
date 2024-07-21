@@ -304,7 +304,6 @@ EOT;
 }
 
 
-
 function createModel($name)
 {
     if ($name) {
@@ -521,14 +520,26 @@ function initReact()
         exit(1);
     }
 
-    echo "Installing React and dependencies...\n";
-    exec('npx create-react-app public/react-app');
+    echo "Initializing React app...\n";
+    exec('npx create-react-app public/react-app', $output, $return_var);
+    if ($return_var !== 0) {
+        echo "Failed to initialize React app. Error: " . implode("\n", $output) . "\n";
+        return;
+    }
 
-    echo "React initialized successfully.\n";
+    echo "Installing Material-UI...\n";
+    exec('cd public/react-app && npm install @mui/material @emotion/react @emotion/styled', $output, $return_var);
+    if ($return_var !== 0) {
+        echo "Failed to install Material-UI. Error: " . implode("\n", $output) . "\n";
+        return;
+    }
+
+    echo "React app with Material-UI initialized successfully.\n";
 
     // Create a marker file
     file_put_contents(__DIR__ . '/../config/react_initialized', 'true');
 }
+
 
 
 function initVue()
